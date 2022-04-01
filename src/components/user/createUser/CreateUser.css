@@ -1,0 +1,21 @@
+.jumbotron {
+    background-color: #F0F3F5;
+    width: 60%;
+    height: 80%;
+    border-radius: 10px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 25px 30px;
+    text-align: left;
+    height: max-content;
+}
+
+.btn-row {
+    float: right;
+}
+
+.btn {
+    margin: 0 5px;
+}
