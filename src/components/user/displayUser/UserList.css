@@ -1,3 +1,14 @@
 .icon {
     font-size: 20px;
 }
+
+th {
+    color: rgb(46, 46, 93);
+}
+
+.user-list {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

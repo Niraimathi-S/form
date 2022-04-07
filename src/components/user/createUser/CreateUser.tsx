@@ -1,53 +1,53 @@
-import React, { Component } from "react";
-import { Col, Form, Row, Button } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Form, Row, Col, Button } from "react-bootstrap";
+import { useSelector, useDispatch } from "react-redux";
+import { useParams, useNavigate } from "react-router-dom";
+
+import { addUser, editUser } from "../../../store/actions";
+import {
+  USER_SUBMIT_SUCCESS,
+  USER_UPDATE_SUCCESS,
+} from "../../../store/constantActions";
+import IUserState from "../../../types/IUserState";
 import User from "../../../types/User";
-import UserList from "../displayUser/UserList";
 import "./CreateUser.css";
 
-interface IUserState {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  mobileNumber: string;
-  gender: string;
-  password: string;
-  users: User[];
-  method: string;
-}
+export default function CreateUser() {
+  const users = useSelector((state: IUserState) => state.users);
+  const dispatch = useDispatch();
+  let navigate = useNavigate();
+  const { id } = useParams();
+  let initialUserState: User = {
+    id: 0,
+    firstName: "",
+    lastName: "",
+    email: "",
+    mobileNumber: "",
+    gender: "",
+    password: "",
+  };
+  const [method, setMethod] = useState("create");
+  const [user, setUser] = useState(initialUserState);
 
-export class Create extends Component<{}, IUserState> {
-  id: number = 0;
-  constructor(props: {}) {
-    super(props);
-    this.state = {
-      id: this.id,
-      firstName: "",
-      lastName: "",
-      email: "",
-      mobileNumber: "",
-      gender: "",
-      password: "",
-      method: "create",
-      users: [],
-    };
-  }
+  useEffect(() => {
+    if (id !== "0") {
+      const userData = users.find(
+        (element: { id: number }) => element.id === Number(id)
+      )!;
+      setUser(userData);
+      setMethod("update");
+    }
+  }, [id, users]);
 
-  handleOnSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleOnChange = (e: { target: { name: string; value: string } }) => {
+    setUser({ ...user, [e.target.name]: e.target.value });
+  };
+
+  const handleOnSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    let alertMessage: string;
-    let {
-      id,
-      firstName,
-      lastName,
-      email,
-      mobileNumber,
-      gender,
-      password,
-      users,
-      method,
-    } = this.state;
-    let user: User = {
+    let { id, firstName, lastName, email, mobileNumber, gender, password } =
+      user;
+    let userData: User = {
       id: id,
       firstName: firstName,
       lastName: lastName,
@@ -58,171 +58,114 @@ export class Create extends Component<{}, IUserState> {
     };
 
     if (method === "create") {
-      user.id = this.id++;
-      users.push(user);
-      alertMessage = "User submitted successfully!!";
+      userData.id = users[users.length - 1].id + 1;
+      dispatch(addUser(userData));
+      alert(USER_SUBMIT_SUCCESS);
     } else {
-      users = users.map((element) => (element.id !== user.id ? element : user));
-      alertMessage = "User updated successfully!!";
+      dispatch(editUser(user));
+      alert(USER_UPDATE_SUCCESS);
     }
-    this.setState({
-      id: 0,
-      firstName: "",
-      lastName: "",
-      email: "",
-      mobileNumber: "",
-      gender: "",
-      password: "",
-      method: "create",
-      users: users,
-    });
-    alert(alertMessage);
+    setUser(initialUserState);
+    setMethod("create");
+    navigate("/userlist");
   };
 
-  handleOnChange = (e: any) => {
-    this.setState({ [e.target.name]: e.target.value } as Pick<IUserState, any>);
-  };
-
-  render() {
-    console.log(this.state);
-    return (
-      <div className="jumbotron">
-        <h2>User Registration</h2>
-        <Form onSubmit={this.handleOnSubmit}>
-          <Row>
-            <Col md="6">
-              <Form.Group as={Row} className="mb-3">
-                <Form.Label>First Name</Form.Label>
-                <Col sm="12">
-                  <Form.Control
-                    value={this.state.firstName}
-                    name="firstName"
-                    type="text"
-                    onChange={this.handleOnChange}
-                    placeholder="First name"
-                  />
-                </Col>
-              </Form.Group>
-            </Col>
-            <Col md="6">
-              <Form.Group as={Row} className="mb-3">
-                <Form.Label>Last Name</Form.Label>
-                <Col sm="12">
-                  <Form.Control
-                    value={this.state.lastName}
-                    name="lastName"
-                    type="text"
-                    onChange={this.handleOnChange}
-                    placeholder="Last name"
-                  />
-                </Col>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="mb-3">
-            <Form.Group>
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                value={this.state.email}
-                name="email"
-                type="email"
-                onChange={this.handleOnChange}
-                placeholder="Enter email"
-              />
+  return (
+    <div className="jumbotron">
+      <h2>User Registration :</h2>
+      <Form onSubmit={handleOnSubmit}>
+        <Row>
+          <Col md="6">
+            <Form.Group as={Row} className="mb-3">
+              <Form.Label className="label">First Name</Form.Label>
+              <Col sm="12">
+                <Form.Control
+                  value={user.firstName}
+                  name="firstName"
+                  type="text"
+                  onChange={handleOnChange}
+                  placeholder="First name"
+                />
+              </Col>
             </Form.Group>
-          </Row>
-          <Row className="mb-3">
-            <Form.Group>
-              <Form.Label>Mobile number</Form.Label>
-              <Form.Control
-                value={this.state.mobileNumber}
-                name="mobileNumber"
-                type="text"
-                onChange={this.handleOnChange}
-                placeholder="Enter contact number"
-              />
+          </Col>
+          <Col md="6">
+            <Form.Group as={Row} className="mb-3">
+              <Form.Label className="label">Last Name</Form.Label>
+              <Col sm="12">
+                <Form.Control
+                  value={user.lastName}
+                  name="lastName"
+                  type="text"
+                  onChange={handleOnChange}
+                  placeholder="Last name"
+                />
+              </Col>
             </Form.Group>
-          </Row>
-          <Row className="mb-3">
-            <Form.Group>
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                value={this.state.password}
-                name="password"
-                onChange={this.handleOnChange}
-                placeholder="Password"
-              />
-            </Form.Group>
-          </Row>
+          </Col>
+        </Row>
+        <Row className="mb-3">
+          <Form.Group>
+            <Form.Label className="label">Email</Form.Label>
+            <Form.Control
+              value={user.email}
+              name="email"
+              type="email"
+              onChange={handleOnChange}
+              placeholder="Enter email"
+            />
+          </Form.Group>
+        </Row>
+        <Row className="mb-3">
+          <Form.Group>
+            <Form.Label className="label">Mobile number</Form.Label>
+            <Form.Control
+              value={user.mobileNumber}
+              name="mobileNumber"
+              type="text"
+              onChange={handleOnChange}
+              placeholder="Enter contact number"
+            />
+          </Form.Group>
+        </Row>
+        <Row className="mb-3">
+          <Form.Group>
+            <Form.Label className="label">Password</Form.Label>
+            <Form.Control
+              type="password"
+              value={user.password}
+              name="password"
+              onChange={handleOnChange}
+              placeholder="Password"
+            />
+          </Form.Group>
+        </Row>
 
-          <Row className="mb-3">
-            <Form.Group>
-              <Form.Label>Gender</Form.Label>
-              <Form.Select
-                value={this.state.gender}
-                name="gender"
-                onChange={this.handleOnChange}
-              >
-                <option>Choose...</option>
-                <option>Male</option>
-                <option>Female</option>
-                <option>Transgender</option>
-              </Form.Select>
-            </Form.Group>
-          </Row>
-          <Row className="mb-3">
-            <Col>
-              <div className="btn-row">
-                <Button className="btn" variant="primary" type="submit">
-                  Submit
-                </Button>
-              </div>
-            </Col>
-          </Row>
-        </Form>
-        <UserList
-          data={this.state.users.length > 0 ? this.state.users : []}
-          deleteUser={this.deleteUser}
-          updateUser={this.updateUser}
-        />
-      </div>
-    );
-  }
-
-  deleteUser = (userId: number) => {
-    const userList = this.state.users;
-    if (userList && userList.length > 0) {
-      const indexToDelete = userList.findIndex(
-        (element) => element.id === userId
-      );
-      if (indexToDelete === -1) return;
-      userList.splice(indexToDelete, 1);
-    }
-    this.setState({
-      users: userList,
-    });
-  };
-
-  updateUser = (userId: number) => {
-    const userList = this.state.users;
-    if (userList && userList.length > 0) {
-      const user = userList.find((element) => element.id === userId)!;
-      const { id, firstName, lastName, email, mobileNumber, gender, password } =
-        user;
-
-      this.setState({
-        id: id,
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        password: password,
-        gender: gender,
-        mobileNumber: mobileNumber,
-        method: "update",
-      });
-    }
-  };
+        <Row className="mb-3">
+          <Form.Group>
+            <Form.Label className="label">Gender</Form.Label>
+            <Form.Select
+              value={user.gender}
+              name="gender"
+              onChange={handleOnChange}
+            >
+              <option>Choose...</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Transgender</option>
+            </Form.Select>
+          </Form.Group>
+        </Row>
+        <Row className="mb-3">
+          <Col>
+            <div className="btn-row">
+              <Button className="btn" variant="primary" type="submit">
+                Submit
+              </Button>
+            </div>
+          </Col>
+        </Row>
+      </Form>
+    </div>
+  );
 }
-
-export default Create;

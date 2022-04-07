@@ -7,3 +7,4 @@ export default interface User {
     gender: string;
     password: string;
 }
+  
